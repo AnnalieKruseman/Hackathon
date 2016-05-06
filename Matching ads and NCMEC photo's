@@ -1,0 +1,84 @@
+import json
+import urllib
+import urllib2
+import pandas as pd
+
+# NCMEC Data processing
+NCMEC_json_file = open('NCMEC.json').read()
+
+NCMEC_json_data = json.loads(NCMEC_json_file)
+
+len(NCMEC_json_data)
+
+NCMEC_json_data[NCMEC_json_data.keys()[0]][0]['gender']
+
+NCMEC_json_data
+
+id_more_faces = [k for k,v in NCMEC_json_data.iteritems() if len(v) > 1 ] 
+
+print len(NCMEC_json_data)
+print len(id_more_faces)
+
+id_one_faces = [k for k,v in NCMEC_json_data.iteritems() if len(v) <= 1 ] 
+print len(id_one_faces)
+
+import pandas as pd
+
+ncmecIdx = []
+ncmecData = []
+
+for k, v in NCMEC_json_data.iteritems():
+    if len(v) != 1:
+        continue
+    ncmecIdx.append(k)
+    ncmecData.append([v[0]['gender'], v[0]['age']])
+    
+ncmecData = pd.DataFrame(data = ncmecData, index = ncmecIdx, columns = ['gender', 'age'])
+ncmecData['NCMEC_photo'] = ncmecData.index
+ncmecData[:5]
+
+# Ads Data processing
+
+ads_json_file = open('Ads.json').read()
+ads_json_data = json.loads(ads_json_file)
+
+len(ads_json_file)
+
+ads_json_data
+
+adsIdx = []
+adsData = []
+
+for k, v in ads_json_data.iteritems():
+    if len(v) != 1:
+        continue
+    adsIdx.append(k)
+    adsData.append([v[0]['gender'], v[0]['age']])
+    
+adsData = pd.DataFrame(data = adsData, index = adsIdx, columns = ['gender', 'age'])
+adsData['ads_photo'] = adsData.index
+adsData[:5]
+
+# Retrieve all possible combinations of ads and NCMEC faces
+
+toCheck = []
+
+for kads,vads in adsData.iterrows():
+    for knc, vnc in ncmecData.iterrows():
+        if vads['gender'] == vnc['gender'] :
+            toCheck.append([kads,knc])
+
+toCheck[:5]
+
+# Merge NCMEC dataframe and Ads dataframe
+
+matches_ncmec_ads = pd.merge(ncmecData, adsData, how = 'inner', on = ['gender', 'age'])
+
+matches_sorted = matches_ncmec_ads.sort_values(by= ['gender', 'age'])
+matches_sorted[:10]
+
+len(matches_sorted)
+
+# Compare features of matching faces
+
+print NCMEC_json_data['Data/NCMEC_Drop2015/AMBER_SWARTZ_0.jpg']
